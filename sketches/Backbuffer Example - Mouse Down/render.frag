@@ -13,8 +13,8 @@ void main() {
   vec2 uv = gl_FragCoord.xy / res.xy;
 
   // Flip the y-axis to place the image texture (will be flipped on y when loading from p5.js)
-  vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
-  vec4 buffer_samp = texture2D(buffer, flipY);
+  vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y );
+  vec4 buffer_samp = texture2D(buffer, flipY); // or, vec4 buffer_samp = texture2D(buffer, vec2(uv.x, 1.0 - uv.y));
 
   vec4 gradient = vec4(uv.x, uv.y, 0.0, 1.0);
   vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
