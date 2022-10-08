@@ -49,11 +49,14 @@ const instantiate = (p) => {
     time = p.frameCount;
     frameCounter();
 
+    // display framerate
+    let rate = p.frameRate();
+    rate = (Math.round(rate * 100) / 100).toFixed(2); // round to two decimal places
+    framerateDOM.innerText = rate;
+
     if (obj.resetTime) {
-      //console.log("called");
+      // shader transition has been requested (buttons.js)
       obj.resetTime = false;
-      // time = time % 120;
-      // console.log(time);
       resetCountSince();
 
       // move the image drawn on the main canvas from the previous frame to the back buffer
@@ -79,8 +82,15 @@ const instantiate = (p) => {
 
     // frameCount as time passed
     shader.setUniform("time", p.frameCount);
-    shader.setUniform("transitionTime", countSince);
-    //console.log(countSince);
+
+    // frames counted since last transition requested
+    //
+    // depending on the final logic needed for transitioning shaders
+    // condition of the if statement here may change
+    // set this uniform only during frames the transition is needed
+    if (countSince <= 101) {
+      shader.setUniform("transitionTime", countSince);
+    }
 
     // Canvas dimensions
     shader.setUniform("canvasResolution", [p.width, p.height]);
@@ -111,6 +121,8 @@ function frameCounter() {
 function resetCountSince() {
   countSince = 0;
 }
+
+const framerateDOM = document.getElementById("framerate");
 
 let myp5 = new p5(instantiate);
 

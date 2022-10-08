@@ -15,23 +15,20 @@ vec4 red = vec4(1.0, 0.0, 0.0, 1.0);
 vec4 green = vec4(0.0, 1.0, 0.0, 1.0);
 vec4 blue = vec4(0.0, 0.0, 1.0, 1.0);
 
-// Pseudocode below should be updated to reflect current process - 2022-10-08
-
-// Btn click event triggers shaderRequested uniform change in JS
+// Btn click event triggers shaderRequested uniform change from event listener in buttons.js
+// uniform sent in sketch.js
 // main() contains if / else tree for doing something with uniform value
-// each time uniform changes
-// gl_FragColor = transition function with known duration that accepts previous shader and next shader
-// once known time passes, or transition function completely showing next shader, change a variable that indicates it is over
-// then gl_FragColor = next shader
-
-// To be added
 //
-// JavaScript timer for determining if shader should be within the transition state
-// --> Can be determined by how many frames have been counted, when does cubicInOut reach 1?
+// each time uniform changes -> gl_FragColor = transition function with known duration that accepts previous shader and next shader
+//
+// transition timing tracked from frame count within sketch.js and sent as uniform
+// --> full transition is when cubicInOut has reached 1.0
 // --> It reaches 1 when the input is 1 ->
 // -----> https://www.desmos.com/calculator
 // -----> 4\cdot x^{3}, 0.5*\left(2*x-2\right)^{3}+1
-// --> So, if I am scaling transitionTime uniform by 0.01, it takes 100 frames
+// --> since we pass in transitionTime * 0.01, transition time must be 100 for full transition
+//
+// once known time passes (meaning the transition function completely showing next shader) then gl_FragColor = next shader
 
 /***********
  * Easings *
@@ -118,23 +115,30 @@ void main() {
   vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
   vec4 buffer_samp = texture2D(buffer, flipY); // or vec4 buffer_samp = texture2D(buffer, vec2(uv.x, 1.0 - uv.y));
 
+  // Testing if else stacking
   if (shaderRequested == 1) {
-    //gl_FragColor = noisefade(buffer_samp, red);
-        // Testing if else stacking
+
     if (transitionTime > 100.) {
       gl_FragColor = pincushionViewer();
     } else {
       gl_FragColor = noisefade(buffer_samp, pincushionViewer());
     }
+    
   } else if (shaderRequested == 2) {
-    // Testing if else stacking
+
     if (transitionTime > 100.) {
       gl_FragColor = shadertoyDefault();
     } else {
       gl_FragColor = noisefade(buffer_samp, shadertoyDefault());
     }
-    //gl_FragColor = noisefade(buffer_samp, shadertoydefault());
+
   } else if (shaderRequested == 3) {
-    gl_FragColor = noisefade(buffer_samp, blue);
+
+    if (transitionTime > 100.) {
+      gl_FragColor = blue;
+    } else {
+      gl_FragColor = noisefade(buffer_samp, blue);
+    }
+
   }
 }
