@@ -7,11 +7,14 @@ import { shaderRequested, obj } from "./buttons.js";
  *******************************************************************************************/
 
 const instantiate = (p) => {
-  let shader, canvas, backbuffer, time;
+  let shader, img, canvas, backbuffer, time;
 
   p.preload = function () {
     // load the shaders
     shader = p.loadShader("basic.vert", "transition-on-uniform.frag");
+
+    // load the image
+    img = p.loadImage("../../images/stock-1-1024x1024-with-guidelines.jpg");
   };
 
   p.setup = function () {
@@ -32,6 +35,8 @@ const instantiate = (p) => {
     //p.setAttributes("alpha", true);
     p.noStroke();
 
+    p.textureWrap(p.REPEAT);
+
     // create an off-screen canvas to be used as a back buffer
     backbuffer = p.createGraphics(p.width, p.height, p.WEBGL);
     backbuffer.clear();
@@ -45,25 +50,28 @@ const instantiate = (p) => {
     frameCounter();
 
     if (obj.resetTime) {
-      console.log("called");
+      //console.log("called");
       obj.resetTime = false;
       // time = time % 120;
       // console.log(time);
       resetCountSince();
+
+      // move the image drawn on the main canvas from the previous frame to the back buffer
+      backbuffer.clear();
+      backbuffer.image(
+        canvas,
+        p.width * -0.5,
+        p.height * -0.5,
+        p.width,
+        p.height
+      );
+
+      // send the back buffer, where the previous frame was drawn, into the shader program
+      shader.setUniform("buffer", backbuffer);
     }
 
-    // move the image drawn on the main canvas from the previous frame to the back buffer
-    backbuffer.clear();
-    backbuffer.image(
-      canvas,
-      p.width * -0.5,
-      p.height * -0.5,
-      p.width,
-      p.height
-    );
-
-    // send the back buffer, where the previous frame was drawn, into the shader program
-    shader.setUniform("buffer", backbuffer);
+    // Image
+    shader.setUniform("texture", img);
 
     // pass variable from buttons.js as uniform
     shader.setUniform("shaderRequested", shaderRequested);
@@ -77,9 +85,11 @@ const instantiate = (p) => {
     // Canvas dimensions
     shader.setUniform("canvasResolution", [p.width, p.height]);
 
-    // since the mouse coordinates and the position of pixels in the shader are converted into values between 0 and 1, the mouse coordinates are also changed accordingly
-    let mx = p.mouseX / p.width;
-    let my = 1 + (-1 * p.mouseY) / p.height;
+    // send the mouse values to the shader as a vec2
+    // map them so that they go from -1 to 1
+    // flip y coordinates so that bottom left is (0,0) as with glsl
+    let mx = p.map(p.mouseX, 0, p.width, -1, 1);
+    let my = p.map(p.mouseY, 0, p.height, 1, -1);
     shader.setUniform("mouse", [mx, my]);
 
     // rect gives us some geometry on the screen
