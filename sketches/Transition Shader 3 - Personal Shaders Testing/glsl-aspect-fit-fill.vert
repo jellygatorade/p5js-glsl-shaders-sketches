@@ -6,26 +6,25 @@ precision mediump float;
 // vertex data
 attribute vec3 aPosition;
 attribute vec2 aTexCoord;
-attribute mat4 uProjectionMatrix;
 
 // texcoord data
-varying vec2 originalTexCoord;
-varying vec2 vTexCoord;
+varying vec2 orig_vTexCoord;
+varying vec2 fit_fill_vTexCoord;
 
 // Canvas and texture dimensions needed for scaling
 uniform vec2 canvasResolution;
-uniform vec2 texture1Resolution;
+uniform vec2 textureResolution; // currently only supporting aspect fit or fill for one texture at a time
 
 void main() {
   vec2 textureScale;
   float scaleX = 1.0, scaleY = 1.0;
 
-  float textureAspectRatio = texture1Resolution.x / texture1Resolution.y;
+  float textureAspectRatio = textureResolution.x / textureResolution.y;
   float viewportAspectRatio = canvasResolution.x / canvasResolution.y;
   float aspectsRatio = viewportAspectRatio / textureAspectRatio;
 
   vec2 viewportRes = canvasResolution.xy;
-  vec2 textureRes = texture1Resolution.xy;
+  vec2 textureRes = textureResolution.xy;
   vec2 resRatio = viewportRes / textureRes;
 
   int modeId = 1; // 0 for aspect fit, 1 for aspect fill
@@ -57,15 +56,15 @@ void main() {
 
   textureScale = vec2(scaleX, scaleY);
 
-  // copy texcoords to the varying
-  originalTexCoord = aTexCoord;
+  // copy original texcoords to the varying
+  orig_vTexCoord = aTexCoord;
 
   // copy position data into a vec4, using 1.0 as the w component
   vec4 positionVec4 = vec4(aPosition, 1.0);
   positionVec4.xy = positionVec4.xy * 2.0 - 1.0; //full canvas size 
-  //positionVec4.xy = positionVec4.xy * 1.0 - 0.5; // quarter canvas size and centered
 
-  vTexCoord = textureScale * (originalTexCoord - 0.5) + 0.5;
+  // send modified texcoords to another varying
+  fit_fill_vTexCoord = textureScale * (orig_vTexCoord - 0.5) + 0.5;
     
   // send the vertex information on to the fragment shader
   gl_Position = positionVec4;

@@ -1,39 +1,29 @@
 precision mediump float;
 
 uniform sampler2D backbuffer;
-uniform sampler2D texture;
+uniform sampler2D radDistortTex;
 uniform sampler2D voronoiMaskTex1;
 uniform sampler2D voronoiMaskTex2;
 
-uniform int shaderRequested;
-uniform float time;
-uniform float transitionTime;
-
 uniform vec2 canvasResolution;
+
+uniform float time;
 
 uniform vec2 mouse;
 
-varying vec2 vTexCoord;
-varying vec2 originalTexCoord;
+uniform int shaderRequested;
+uniform float transitionTime;
+
+varying vec2 orig_vTexCoord;
+varying vec2 fit_fill_vTexCoord;
+
+/**************************
+ * Colors - for Debugging *
+ **************************/
 
 vec4 red = vec4(1.0, 0.0, 0.0, 1.0);
 vec4 green = vec4(0.0, 1.0, 0.0, 1.0);
 vec4 blue = vec4(0.0, 0.0, 1.0, 1.0);
-
-// Btn click event triggers shaderRequested uniform change from event listener in buttons.js
-// uniform sent in sketch.js
-// main() contains if / else tree for doing something with uniform value
-//
-// each time uniform changes -> gl_FragColor = transition function with known duration that accepts previous shader and next shader
-//
-// transition timing tracked from frame count within sketch.js and sent as uniform
-// --> full transition is when cubicInOut has reached 1.0
-// --> It reaches 1 when the input is 1 ->
-// -----> https://www.desmos.com/calculator
-// -----> 4\cdot x^{3}, 0.5*\left(2*x-2\right)^{3}+1
-// --> since we pass in transitionTime * 0.01, transition time must be 100 for full transition
-//
-// once known time passes (meaning the transition function completely showing next shader) then gl_FragColor = next shader
 
 /***********
  * Easings *
@@ -108,16 +98,13 @@ vec4 pincushionViewer() {
   vec2 flipY = vec2( uv.x , -1.0 * uv.y );
   flipY = (flipY / radialDistortion) * 1.0 - 0.5;
 
-  return texture2D(texture, scaleTexMap * flipY);
+  return texture2D(radDistortTex, scaleTexMap * flipY);
 }
 
 // Voronoi Mask
-vec2 hash2(vec2 p ) {
+vec2 hash(vec2 p ) {
    return fract(sin(vec2(dot(p, vec2(123.4, 748.6)), dot(p, vec2(547.3, 659.3))))*5232.85324);   
 }
-// float hash(vec2 p) {
-//   return fract(sin(dot(p, vec2(43.232, 75.876)))*4526.3257);   
-// }
 
 float voronoi(vec2 p) {
     vec2 n = floor(p);
@@ -127,7 +114,7 @@ float voronoi(vec2 p) {
     for (int i = -1;i<=1;i++) {
         for (int j = -1;j<=1;j++) {
             vec2 g = vec2(i, j);
-            vec2 o = hash2(n+g);
+            vec2 o = hash(n+g);
             o = 0.5+0.5*sin(time*0.03+5.038*o);
             vec2 r = g + o - f;
             float d = dot(r, r);
@@ -154,7 +141,7 @@ float ov(vec2 p) {
 vec4 voronoiMask() {
 
   // Voronoi
-  vec2 vAspect = originalTexCoord * canvasResolution;
+  vec2 vAspect = orig_vTexCoord * canvasResolution;
   vec2 uv = vAspect/160.0;
   vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
   vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
@@ -164,20 +151,11 @@ vec4 voronoiMask() {
   // Images
   
   // Flip the y-axis to place the image texture (will be flipped on y when loading from p5.js)
-  vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
+  vec2 flipY = vec2( fit_fill_vTexCoord.x, 1.0 - fit_fill_vTexCoord.y);
   vec4 color1 = texture2D(voronoiMaskTex1, flipY);
   vec4 color2 = texture2D(voronoiMaskTex2, flipY);
 
-  // For aspect fit
-  // This condition will not be met for aspect fill
-  vec4 yellow = vec4(1.0, 1.0, 0.0, 1.0);
-  if (vTexCoord.x < 0.0 || vTexCoord.x > 1.0 ||
-    vTexCoord.y < 0.0 || vTexCoord.y > 1.0) {
-    color1 = yellow;
-  }
-
   return mix(color1, color2, voronoiMask.r);
-  //return voronoiMask;
 }
 
 /********
@@ -185,8 +163,6 @@ vec4 voronoiMask() {
  ********/
 
 void main() {
-  vec2 flipY = vec2( originalTexCoord.x, 1.0 - originalTexCoord.y);
-
   // Testing if else stacking
   if (shaderRequested == 1) {
 
@@ -194,7 +170,7 @@ void main() {
       gl_FragColor = pincushionViewer();
     } else {
       //vec2 uv = gl_FragCoord.xy / canvasResolution.xy;
-      //vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
+      vec2 flipY = vec2( orig_vTexCoord.x, 1.0 - orig_vTexCoord.y);
       vec4 backbuffer_samp = texture2D(backbuffer, flipY); // or vec4 backbuffer_samp = texture2D(backbuffer, vec2(uv.x, 1.0 - uv.y));
 
       gl_FragColor = noisefade(backbuffer_samp, pincushionViewer());
@@ -206,7 +182,7 @@ void main() {
       gl_FragColor = shadertoyDefault();
     } else {
       //vec2 uv = gl_FragCoord.xy / canvasResolution.xy;
-      //vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
+      vec2 flipY = vec2( orig_vTexCoord.x, 1.0 - orig_vTexCoord.y);
       vec4 backbuffer_samp = texture2D(backbuffer, flipY); // or vec4 backbuffer_samp = texture2D(backbuffer, vec2(uv.x, 1.0 - uv.y));
 
       gl_FragColor = noisefade(backbuffer_samp, shadertoyDefault());
@@ -218,7 +194,7 @@ void main() {
       gl_FragColor = voronoiMask();
     } else {
       //vec2 uv = gl_FragCoord.xy / canvasResolution.xy;
-      //vec2 flipY = vec2( vTexCoord.x, 1.0 - vTexCoord.y);
+      vec2 flipY = vec2( orig_vTexCoord.x, 1.0 - orig_vTexCoord.y);
       vec4 backbuffer_samp = texture2D(backbuffer, flipY); // or vec4 backbuffer_samp = texture2D(backbuffer, vec2(uv.x, 1.0 - uv.y));
 
       gl_FragColor = noisefade(backbuffer_samp, voronoiMask());

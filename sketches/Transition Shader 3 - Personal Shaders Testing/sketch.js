@@ -7,20 +7,17 @@ import { shaderRequested, obj } from "./buttons.js";
  *******************************************************************************************/
 
 const instantiate = (p) => {
-  let shader, img, vmImg1, vmImg2, canvas, backbuffer, time;
-
-  // p5.disableFriendlyErrors = true;
+  let shader, rdImg, vmImg1, vmImg2, canvas, backbuffer, time;
 
   p.preload = function () {
     // load shaders
     shader = p.loadShader(
-      //"basic.vert",
       "glsl-aspect-fit-fill.vert",
-      "transition-on-uniform.frag"
+      "glsl-transition-on-uniform.frag"
     );
 
     // load images
-    img = p.loadImage("../../images/stock-1-1024x1024-with-guidelines.jpg");
+    rdImg = p.loadImage("../../images/stock-1-1024x1024-with-guidelines.jpg");
     vmImg1 = p.loadImage("../../images/seaweed-green.jpg");
     vmImg2 = p.loadImage("../../images/sun-fence.jpg");
   };
@@ -28,19 +25,6 @@ const instantiate = (p) => {
   p.setup = function () {
     // shaders require WEBGL mode to work
     canvas = p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-    /********************************************************************************************
-     *
-     *
-     *
-     *
-     *
-     *  Something about the alpha channel allowance makes backbuffer blank?
-     *
-     *
-     *
-     *
-     */
-    //p.setAttributes("alpha", true);
     p.noStroke();
 
     p.textureWrap(p.REPEAT);
@@ -82,8 +66,14 @@ const instantiate = (p) => {
       shader.setUniform("backbuffer", backbuffer.get());
     }
 
-    // Images
-    shader.setUniform("texture", img);
+    // frames counted since last transition requested
+    // set this uniform only during frames the transition is needed
+    if (countSince <= 101) {
+      shader.setUniform("transitionTime", countSince);
+    }
+
+    // images
+    shader.setUniform("radDistortTex", rdImg);
     shader.setUniform("voronoiMaskTex1", vmImg1);
     shader.setUniform("voronoiMaskTex2", vmImg2);
 
@@ -91,22 +81,14 @@ const instantiate = (p) => {
     shader.setUniform("shaderRequested", shaderRequested);
     shader.setUniform("resetTransition", obj.resetTime);
 
-    // frameCount as time passed
+    // p.frameCount as time passed
     shader.setUniform("time", p.frameCount);
 
-    // frames counted since last transition requested
-    // set this uniform only during frames the transition is needed
-    if (countSince <= 101) {
-      shader.setUniform("transitionTime", countSince);
-    }
-
-    // Canvas dimensions
+    // canvas dimensions
     shader.setUniform("canvasResolution", [p.width, p.height]);
 
-    // Texture dimensions
-    //shader.setUniform("textureResolution", [img.width, img.height]);
-    shader.setUniform("texture1Resolution", [vmImg1.width, vmImg1.height]);
-    //shader.setUniform("texture2Resolution", [img2.width, img2.height]);
+    // texture dimensions for glsl-aspect-fit-fill.vert
+    shader.setUniform("textureResolution", [vmImg1.width, vmImg1.height]);
 
     // send the mouse values to the shader as a vec2
     // map them so that they go from -1 to 1
@@ -141,8 +123,6 @@ function transitionFrameCounter(p) {
     default: // countSince is 100 or above but not exactly 101 or 102
       countSince = 101;
   }
-
-  //console.log(countSince);
 
   return countSince;
 }
