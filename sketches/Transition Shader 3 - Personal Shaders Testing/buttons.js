@@ -9,7 +9,7 @@ btn1.addEventListener("click", action1);
 btn2.addEventListener("click", action2);
 btn3.addEventListener("click", action3);
 
-function action1(event) {
+function action1() {
   shaderRequested = 1;
   obj.resetTime = true;
 }

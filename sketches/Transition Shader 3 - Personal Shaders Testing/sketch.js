@@ -9,6 +9,8 @@ import { shaderRequested, obj } from "./buttons.js";
 const instantiate = (p) => {
   let shader, rdImg, vmImg1, vmImg2, canvas, backbuffer, time;
 
+  let rdTex;
+
   p.preload = function () {
     // load shaders
     shader = p.loadShader(
@@ -24,17 +26,26 @@ const instantiate = (p) => {
 
   p.setup = function () {
     // shaders require WEBGL mode to work
-    canvas = p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+    canvas = p.createCanvas(window.innerWidth, window.innerHeight, p.WEBGL); // using window. instead of p.windowWidth because of Edge bug
     p.noStroke();
-
-    p.textureWrap(p.REPEAT);
 
     // create an off-screen canvas to be used as a back buffer
     backbuffer = p.createGraphics(p.width, p.height, p.WEBGL);
     backbuffer.clear();
+
+    // set texture wrap modes from images
+    // only if REPEAT or MIRROR is required, by default images will be set to CLAMP
+    // this is alternative to setting the texture wrap mode globally with p.textureWrap(p.REPEAT)
+    rdTex = new p5.Texture(canvas, rdImg);
+    rdTex.setWrapMode(p.REPEAT, p.REPEAT);
   };
 
   p.draw = function () {
+    // rect gives us some geometry on the screen
+    // 0 width and height so that it doesn't show for any frames
+    p.rect(0, 0, 0, 0);
+    //p.color("black");
+
     // set the active shader
     p.shader(shader);
 
@@ -72,8 +83,8 @@ const instantiate = (p) => {
       shader.setUniform("transitionTime", countSince);
     }
 
-    // images
-    shader.setUniform("radDistortTex", rdImg);
+    // images / textures
+    shader.setUniform("radDistortTex", rdTex);
     shader.setUniform("voronoiMaskTex1", vmImg1);
     shader.setUniform("voronoiMaskTex2", vmImg2);
 
@@ -96,13 +107,11 @@ const instantiate = (p) => {
     let mx = p.map(p.mouseX, 0, p.width, -1, 1);
     let my = p.map(p.mouseY, 0, p.height, 1, -1);
     shader.setUniform("mouse", [mx, my]);
-
-    // rect gives us some geometry on the screen
-    p.rect(0, 0, p.width, p.height);
   };
 
   p.windowResized = function () {
     p.resizeCanvas(p.windowWidth, p.windowHeight);
+    backbuffer.resizeCanvas(p.width, p.height); // or, backbuffer.resizeCanvas(p.windowWidth, p.windowHeight);
   };
 };
 
