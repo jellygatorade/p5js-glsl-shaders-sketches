@@ -16,7 +16,7 @@ void main() {
   m.x *= aspect;
 
   float sinTime = 0.5 * sin(time * 0.01) + 0.5;
-  //float scaleDistortion = sinTime + 1.;
+
   float scaleTexMap = sinTime + 2.;
 
   float radialDistortion = (pow((uv.x - m.x), 2.) + pow((uv.y - m.y), 2.)) * 1.0 + 2.0; // These values
