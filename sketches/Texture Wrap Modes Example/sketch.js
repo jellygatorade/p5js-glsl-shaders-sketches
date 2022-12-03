@@ -1,4 +1,4 @@
-let canvas, myShader, img, time;
+let canvas, myShader, img;
 
 let tex1, tex2;
 
@@ -17,13 +17,21 @@ function setup() {
 
   // Example of using the new p5.Texture() operator at https://github.com/processing/p5.js/issues/5556
   tex0 = new p5.Texture(canvas, img);
-  tex0.setWrapMode(CLAMP, CLAMP); // p5.Texture.prototype.setWrapMode() found in /src/webgl/p5.Texture.js
+  //tex0.setWrapMode(CLAMP, CLAMP); // p5.Texture.prototype.setWrapMode() found in /src/webgl/p5.Texture.js
 
   tex1 = new p5.Texture(canvas, img);
-  tex1.setWrapMode(MIRROR, MIRROR);
+  //tex1.setWrapMode(MIRROR, MIRROR);
+  tex1 = new p5.Texture(canvas, img, {
+    wrapS: MIRROR,
+    wrapT: MIRROR,
+  });
 
-  tex2 = new p5.Texture(canvas, img);
-  tex2.setWrapMode(REPEAT, REPEAT);
+  //tex2 = new p5.Texture(canvas, img);
+  // tex2.setWrapMode(REPEAT, REPEAT);
+  tex2 = new p5.Texture(canvas, img, {
+    wrapS: REPEAT,
+    wrapT: REPEAT,
+  });
 }
 
 function draw() {
