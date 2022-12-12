@@ -63,23 +63,15 @@ float ov(vec2 p) {
 }
 
 void main() {
-  float scaleFactor = 200.0;
+  float sinTime = 0.5 * sin(time * 0.01) + 0.5; // between 0 and 0.5
 
-  vAspect.x = vTexCoord.x * canvasResolution.x / scaleFactor;
-  vAspect.y = vTexCoord.y * canvasResolution.y / scaleFactor;
-
-  float sinTime = 0.25 * sin(time * 0.01) + 0.5; // between 0 and 0.5
-
-  //vec2 uv = vAspect;
   // Center coordinates at 0, with x and y in range [-1,1]:
   vec2 uv = ( 2. * gl_FragCoord.xy - canvasResolution.xy ) / canvasResolution.y;
   float radialDistortion = (pow((uv.x), 2.) + pow((uv.y), 2.)) * 0.25 - 1.0; // These values
   uv = uv * radialDistortion;
 
-  vec4 a = vec4(0.0, 0.0, 0.0, 1.0); // color at point (cell center)
-  vec4 b = vec4(1.0, 1.0, 1.0, 1.0); // color at edge
+  vec4 a = vec4(1.0, 0.0, 0.0, 1.0); // color at point (cell center)
+  vec4 b = vec4(0.0, 0.0, 1.0, 1.0); // color at edge
 
 	gl_FragColor = vec4(mix(a, b, smoothstep(0.0, 0.25, ov(uv))));
-
-  //resolution
 }
