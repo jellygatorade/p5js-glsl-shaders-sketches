@@ -11,10 +11,11 @@ const config = {
   height: 100,
 };
 
+// Adds new canvas to dom and returns the 2d canvas context
 function createNewCanvas() {
   const HTMLcanvas = document.createElement("canvas");
-  HTMLcanvas.style.width = `${config.width}px`;
-  HTMLcanvas.style.height = `${config.height}px`;
+  HTMLcanvas.width = config.width;
+  HTMLcanvas.height = config.height;
   document.getElementById("canvas-parent").appendChild(HTMLcanvas);
 
   const HTMLcontext = HTMLcanvas.getContext("2d");
@@ -54,27 +55,27 @@ function draw() {
   // rect gives us some geometry on the screen
   rect(0, 0, width, height);
 
-  //////////////////////////////////////////////////////
+  /******************************************************
+   * After you complete whatever normal p5 sketching
+   * Grab the current frame (the one before the one currently being drawn)
+   * and write to the new canvas contexts
+   ******************************************************/
+
+  // Store the last frame
   bufferedFrame = canvas.get();
 
+  // get the HTML canvas ImageData object from the Canvas API
   let imageData = bufferedFrame.canvas
     .getContext("2d")
     .getImageData(0, 0, config.width, config.height);
 
+  // Keep an array of the last keepFrames amount of ImageData
   bufferedFrames.unshift(imageData);
   if (bufferedFrames.length > keepFrames) {
     bufferedFrames.pop();
   }
 
-  //console.log(bufferedFrames.length);
-  // console.log(framebuffer);
-  // console.log(
-  //   bufferedFrame.canvas
-  //     .getContext("2d")
-  //     .getImageData(0, 0, canvas.width, canvas.height)
-  // );
-  //console.log(imageData);
-
+  // Write each ImageData in bufferedFrames to DOM
   for (let i = 0; i < bufferedFrames.length; i++) {
     canvasCtxArray[i].putImageData(bufferedFrames[i], 0, 0);
   }
