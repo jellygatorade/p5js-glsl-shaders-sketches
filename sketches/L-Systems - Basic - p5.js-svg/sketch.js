@@ -12,6 +12,7 @@
 
 // See also
 // https://jsantell.com/l-systems/
+// https://jobtalle.com/lindenmayer_systems.html
 
 // variables: A B
 // axiom: A
@@ -22,14 +23,14 @@ var canvasWidth = 600;
 var canvasHeight = 600;
 var axiom = "F";
 var sentence = axiom;
-var weight = 5;
-var len = 150;
+var weight = 2;
+var len = 100;
 
 var rules = [];
 rules[0] = {
   a: "F",
-  b: "FF+[+F-F-F]-[-F+F+F]",
-  //b: "F[+F]F[-F]F",
+  //b: "FF+[+F-F-F]-[-F+F+F]",
+  b: "F[+F]F[-F]F",
 };
 
 function generate() {
@@ -103,8 +104,11 @@ function setup() {
   createP(axiom);
   turtle();
 
-  var button = createButton("generate");
-  button.mousePressed(generate);
+  var genButton = createButton("Generate");
+  genButton.mousePressed(generate);
+
+  var saveButton = createButton("Save SVG");
+  saveButton.mousePressed(save);
 
   noLoop();
 }

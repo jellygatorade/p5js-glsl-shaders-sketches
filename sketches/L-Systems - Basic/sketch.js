@@ -12,6 +12,7 @@
 
 // See also
 // https://jsantell.com/l-systems/
+// https://jobtalle.com/lindenmayer_systems.html
 
 // variables: A B
 // axiom: A
