@@ -9,7 +9,9 @@ function preload() {
   // load the image
   //img = loadImage("stock-1-1920x1080-with-guidelines.jpg");
   img1 = loadImage("../../images/seaweed-green.jpg");
+  //img1 = loadImage("../../images/sun-fence.jpg");
   img2 = loadImage("../../images/sun-fence.jpg");
+  //img2 = loadImage("../../images/stock-1-1920x1080-with-guidelines.jpg");
 }
 
 function setup() {
