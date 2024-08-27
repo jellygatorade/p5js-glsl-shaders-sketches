@@ -1,13 +1,11 @@
-let theShader;
+let theShader, img1, img2;
 
 function preload() {
-  theShader = loadShader("basic.vert", "tileable-water-caustic.frag");
+  theShader = loadShader("glsl-aspect-fit-fill.vert", "star-field.frag");
 
-  // load the images
-  img1 = loadImage("../../images/duke-forest.jpg");
-  img2 = loadImage(
-    "../../images/wetland-cloud.jpg"
-  );
+  // img1 = loadImage("../../images/duke-forest.jpg");
+  img1 = loadImage("../../images/sun-fence.jpg");
+  img2 = loadImage("../../images/colorado-tree.jpg");
 }
 
 function setup() {
@@ -26,7 +24,11 @@ function draw() {
   // and the canvas dimensions
   theShader.setUniform("canvasResolution", [width, height]);
 
-  // and the images
+  // Texture dimensions
+  theShader.setUniform("texture1Resolution", [img1.width, img1.height]);
+  theShader.setUniform("texture2Resolution", [img2.width, img2.height]);
+
+  // Image
   theShader.setUniform("tex1", img1);
   theShader.setUniform("tex2", img2);
 

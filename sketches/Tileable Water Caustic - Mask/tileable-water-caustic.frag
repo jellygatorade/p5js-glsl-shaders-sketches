@@ -16,6 +16,10 @@ vec2 vAspect;
 // time uniform variable coming from p5
 uniform float time;
 
+// images are sent to the shader as a variable type called sampler2D
+uniform sampler2D tex1;
+uniform sampler2D tex2;
+
 // Redefine below to see the tiling...
 //#define SHOW_TILING
 
@@ -31,7 +35,12 @@ void main()
     vAspect.x = vTexCoord.x * canvasResolution.x / ASPECT_SCALE_FACTOR;
     vAspect.y = vTexCoord.y * canvasResolution.y / ASPECT_SCALE_FACTOR;
     
-    vec2 uv = vAspect;
+    vec2 uv = vTexCoord;
+    uv.y = 1.0 - uv.y;
+    vec4 img1 = texture2D(tex1, uv);
+    vec4 img2 = texture2D(tex2, uv);
+
+    uv = vAspect;
     
     #ifdef SHOW_TILING
         vec2 p = mod(uv*TAU*2.0, TAU)-250.0;
@@ -50,7 +59,7 @@ void main()
 		c += 1.0/length(vec2(p.x / (sin(i.x+t)/inten),p.y / (cos(i.y+t)/inten)));
 	}
 	c /= float(MAX_ITER);
-	c = 1.17-pow(c, 1.4); // adjust white here
+	c = 1.3-pow(c, 1.2); // adjust white here
 	vec3 colour = vec3(pow(abs(c), 8.0));
     colour = clamp(colour + vec3(0.0, 0.0, 0.0), 0.0, 1.0); // adjust black here
 
@@ -63,6 +72,9 @@ void main()
         uv  = step(fract(uv), pixel);				// Add one line of pixels per tile.
         colour = mix(colour, vec3(1.0, 1.0, 0.0), (uv.x + uv.y) * first.x * first.y); // Yellow line
 	#endif
+
+    vec4 mixImages = mix(img1, img2, colour.r);
     
-	gl_FragColor = vec4(colour, 1.0);
+	// gl_FragColor = vec4(colour, 1.0);
+	gl_FragColor = mixImages;
 }

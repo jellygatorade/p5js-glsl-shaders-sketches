@@ -1,10 +1,17 @@
 let theShader;
+let img1, img2;
 
 function preload() {
-  theShader = loadShader("basic.vert", "tileable-water-caustic.frag");
+  // theShader = loadShader("basic.vert", "voronoi-radial-distortion.frag");
+  theShader = loadShader("glsl-aspect-fit-fill.vert", "voronoi-radial-distortion.frag");
 
   // load the images
-  img1 = loadImage("../../images/duke-forest.jpg");
+  img1 = loadImage("../../images/lofoten-red-horizon.jpg");
+  // img2 = loadImage(
+  //   "../../images/grass-erosion.jpg"
+  // );
+
+  // img1 = loadImage("../../images/duke-forest.jpg");
   img2 = loadImage(
     "../../images/wetland-cloud.jpg"
   );
@@ -23,8 +30,12 @@ function draw() {
   // lets just send frameCount to the shader as a way to control animation over time
   theShader.setUniform("time", frameCount);
 
-  // and the canvas dimensions
+  // Canvas dimensions
   theShader.setUniform("canvasResolution", [width, height]);
+
+  // Texture dimensions
+  theShader.setUniform("texture1Resolution", [img1.width, img1.height]);
+  theShader.setUniform("texture2Resolution", [img2.width, img2.height]);
 
   // and the images
   theShader.setUniform("tex1", img1);
